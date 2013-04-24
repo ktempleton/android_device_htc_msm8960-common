@@ -28,11 +28,11 @@ PRODUCT_PACKAGES += \
 
 # Qualcomm scripts
 PRODUCT_COPY_FILES += \
+    device/htc/msm8960-common/configs/init.post_boot.sh:/system/etc/init.post_boot.sh \
     device/htc/msm8960-common/configs/init.qcom.bt.sh:/system/etc/init.qcom.bt.sh \
+    device/htc/msm8960-common/configs/init.qcom.coex.sh:/system/etc/init.qcom.coex.sh\
     device/htc/msm8960-common/configs/init.qcom.fm.sh:/system/etc/init.qcom.fm.sh \
-    device/htc/msm8960-common/configs/init.qcom.post_boot.sh:/system/etc/init.qcom.post_boot.sh \
-    device/htc/msm8960-common/configs/init.qcom.sdio.sh:/system/etc/init.qcom.sdio.sh \
-    device/htc/msm8960-common/configs/init.qcom.wifi.sh:/system/etc/init.qcom.wifi.sh
+    device/htc/msm8960-common/configs/init.qcom.post_boot.sh:/system/etc/init.qcom.post_boot.sh
 
 # Permissions
 PRODUCT_COPY_FILES += \
@@ -157,9 +157,8 @@ PRODUCT_PROPERTY_OVERRIDES += \
     persist.gps.qmienabled=true \
     persist.hwc.mdpcomp.enable=true \
     persist.thermal.monitor=true \
-    ro.baseband.arch=msm \
+    ro.baseband.arch=mdm \
     ro.opengles.version=131072 \
-    ro.product.wireless=WCN3660 \
     ro.qc.sdk.audio.fluencetype=fluence \
     ro.qualcomm.bt.hci_transport=smd \
     ro.telephony.ril_class=HTC8960RIL \

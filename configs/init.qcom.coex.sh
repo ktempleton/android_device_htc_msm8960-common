@@ -1,5 +1,5 @@
 #!/system/bin/sh
-# Copyright (c) 2009-2011, Code Aurora Forum. All rights reserved.
+# Copyright (c) 2009-2010, Code Aurora Forum. All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -24,19 +24,11 @@
 # WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
 # OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-#
 
-setprop hw.fm.init 0
-
-mode=`getprop hw.fm.mode`
-version=`getprop hw.fm.version`
-isAnalog=`getprop hw.fm.isAnalog`
-
-#find the transport type
-TRANSPORT=`getprop ro.qualcomm.bt.hci_transport`
-
-LOG_TAG="qcom-fm"
+LOG_TAG="qcom-bt-wlan-coex"
 LOG_NAME="${0}:"
+
+coex_pid=""
 
 loge ()
 {
@@ -54,55 +46,43 @@ failed ()
   exit $2
 }
 
-logi "In FM shell Script"
-logi "mode: $mode"
-logi "isAnalog: $isAnalog"
-logi "Transport : $TRANSPORT"
-logi "Version : $version"
+start_coex ()
+{
+  # Must have -o turned on to avoid daemon (otherwise we cannot get pid)
+  /system/bin/btwlancoex -o $opt_flags &
+  coex_pid=$!
+  logi "start_coex: pid = $coex_pid"
+}
 
-#$fm_qsoc_patches <fm_chipVersion> <enable/disable WCM>
-#
-case $mode in
-  "normal")
-    case $TRANSPORT in
-    "smd")
-        logi "inserting the radio transport module"
-        insmod /system/lib/modules/radio-iris-transport.ko
-        setprop hw.fm.init 1
-        exit 0
-     ;;
-     *)
-        logi "not a smd transport case, doing patch download"
-        /system/bin/fm_qsoc_patches $version 0
-     ;;
-    esac
-     ;;
-  "wa_enable")
-   /system/bin/fm_qsoc_patches $version 1
-     ;;
-  "wa_disable")
-   /system/bin/fm_qsoc_patches $version 2
-     ;;
-  "config_dac")
-   /system/bin/fm_qsoc_patches $version 3 $isAnalog
-     ;;
-   *)
-    logi "Shell: Default case"
-    /system/bin/fm_qsoc_patches $version 0
-    ;;
-esac
+kill_coex ()
+{
+  logi "kill_coex: pid = $coex_pid"
+  kill -TERM $coex_pid
+  # this shell doesn't exit now -- wait returns for normal exit
+}
 
-exit_code_fm_qsoc_patches=$?
+# mimic coex options parsing -- maybe a waste of effort
+USAGE="${0} [-o] [-c] [-r] [-i] [-h]"
 
-case $exit_code_fm_qsoc_patches in
-   0)
-	logi "FM QSoC calibration and firmware download succeeded"
-   ;;
-  *)
-	failed "FM QSoC firmware download and/or calibration failed" $exit_code_fm_qsoc_patches
-   ;;
-esac
+while getopts "ocrih" f
+do
+  case $f in
+  o | c | r | i | h)  opt_flags="$opt_flags -$f" ;;
+  \?)     echo $USAGE; exit 1;;
+  esac
+done
 
-setprop hw.fm.init 1
+# init does SIGTERM on ctl.stop for service
+trap "kill_coex" TERM INT
+
+# Build settings may not produce the coex executable
+if ls /system/bin/btwlancoex
+then
+    start_coex
+    wait $coex_pid
+    logi "Coex stopped"
+else
+    logi "btwlancoex not available"
+fi
 
 exit 0
