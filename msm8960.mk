@@ -19,21 +19,6 @@ $(call inherit-product, $(SRC_TARGET_DIR)/product/languages_full.mk)
 # overlays
 DEVICE_PACKAGE_OVERLAYS += device/htc/msm8960-common/overlay
 
-# Boot ramdisk setup
-PRODUCT_PACKAGES += \
-    init.qcom.sh \
-    init.qcom.usb.rc \
-    init.qcom.rc \
-    ueventd.qcom.rc
-
-# Qualcomm scripts
-PRODUCT_COPY_FILES += \
-    device/htc/msm8960-common/configs/init.post_boot.sh:/system/etc/init.post_boot.sh \
-    device/htc/msm8960-common/configs/init.qcom.bt.sh:/system/etc/init.qcom.bt.sh \
-    device/htc/msm8960-common/configs/init.qcom.coex.sh:/system/etc/init.qcom.coex.sh\
-    device/htc/msm8960-common/configs/init.qcom.fm.sh:/system/etc/init.qcom.fm.sh \
-    device/htc/msm8960-common/configs/init.qcom.post_boot.sh:/system/etc/init.qcom.post_boot.sh
-
 # Permissions
 PRODUCT_COPY_FILES += \
     frameworks/native/data/etc/handheld_core_hardware.xml:system/etc/permissions/handheld_core_hardware.xml \
